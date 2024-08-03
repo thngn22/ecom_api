@@ -1,9 +1,10 @@
-import express, { Request, Response, NextFunction, Express } from 'express'
+import express, { Express } from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import compression from 'compression'
-const env = require('~/configs/environments')
-const APIs_V1 = require('~/routes/v1')
+
+import env from '~/configs/environments'
+import APIs_V1 from '~/routes/v1'
 
 const app: Express = express()
 

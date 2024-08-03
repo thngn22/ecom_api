@@ -1,5 +1,5 @@
-import mongoose from 'mongoose'
-const env = require('~/configs/environments')
+import mongoose = require('mongoose')
+import env from '~/configs/environments'
 
 const connectString = `mongodb://${env.DB.HOST}:${env.DB.PORT}`
 

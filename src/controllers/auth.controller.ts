@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express'
-const { AuthService } = require('~/services')
+
+import AuthService = require('~/services/auth.service')
 
 class AuthController {
   signUp = async (req: Request, res: Response, next: NextFunction) => {
@@ -17,4 +18,4 @@ class AuthController {
   }
 }
 
-module.exports = new AuthController()
+export = new AuthController()
