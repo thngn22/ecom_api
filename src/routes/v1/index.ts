@@ -1,9 +1,9 @@
 import express from 'express'
 
-import authRoutes from './authRoutes'
+import accessRoutes from './access.routes'
 
 const Router = express.Router()
 
-Router.use('/auth', authRoutes)
+Router.use('/access', accessRoutes)
 
 export default Router

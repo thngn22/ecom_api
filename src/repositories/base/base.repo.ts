@@ -2,6 +2,10 @@ import IRead = require('../interfaces/base/Read')
 import IWrite = require('../interfaces/base/Write')
 import mongoose = require('mongoose')
 
+interface QueryOptions {
+  lean?: boolean
+}
+
 class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T> {
   private _model: mongoose.Model<T>
 
@@ -9,15 +13,18 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
     this._model = schemaModel
   }
 
-  async create(item: Partial<T> | Partial<T>[]): Promise<T[]> {
+  async create(item: Partial<T>): Promise<T> {
     try {
-      // Nếu item là một mảng, phương thức create của Mongoose sẽ xử lý trực tiếp
-      // Nếu không, nó sẽ bao bọc item trong một mảng
-      if (Array.isArray(item)) {
-        return await this._model.create(item)
-      } else {
-        return await this._model.create([item])
-      }
+      const data = await this._model.create([item])
+      return data[0]
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async createMany(item: Partial<T>[]): Promise<T[]> {
+    try {
+      return await this._model.create(item)
     } catch (error) {
       throw error
     }
@@ -37,6 +44,22 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
 
   findById(_id: string, callback: (error: any, result: T | null) => void) {
     this._model.findById(_id, callback)
+  }
+
+  async findOne(conditions: mongoose.FilterQuery<T>, options?: QueryOptions): Promise<T | null> {
+    let query = this._model.findOne(conditions)
+    if (options?.lean) {
+      query = query.lean()
+    }
+    return query.exec()
+  }
+
+  async find(conditions: mongoose.FilterQuery<T>, options?: QueryOptions): Promise<T[]> {
+    let query = this._model.find(conditions)
+    if (options?.lean) {
+      query = query.lean()
+    }
+    return query.exec()
   }
 
   private toObjectId(_id: string): mongoose.Types.ObjectId {

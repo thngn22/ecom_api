@@ -1,12 +1,12 @@
 import express, { Request, Response, NextFunction } from 'express'
 
-import AuthService = require('~/services/auth.service')
+import AccessService = require('~/services/access.service')
 
-class AuthController {
+class AccessController {
   signUp = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await AuthService.signUp(req.body)
-      return res.status(201).json({
+      const data = await AccessService.signUp(req.body)
+      return res.json({
         message: 'Sign up test successful!!',
         metadata: {
           data
@@ -18,4 +18,4 @@ class AuthController {
   }
 }
 
-export = new AuthController()
+export = new AccessController()
