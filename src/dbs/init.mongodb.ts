@@ -1,7 +1,7 @@
-import mongoose from 'mongoose'
-const env = require('~/configs/environments')
+import mongoose = require('mongoose')
+import env from '~/configs/environments'
 
-const connectString = `mongodb://${env.DB.HOST}:${env.DB.PORT}/${env.DB.NAME}`
+const connectString = `mongodb://${env.DB.HOST}:${env.DB.PORT}`
 
 class Database {
   private static instance: Database
@@ -17,7 +17,7 @@ class Database {
     }
 
     mongoose
-      .connect(connectString)
+      .connect(connectString, { dbName: env.DB.NAME })
       .then(() => console.log(`Connected to MongoDB Success!!!`))
       .catch((err: Error) => console.log(`Error Connect!`, err))
   }

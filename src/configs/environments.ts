@@ -12,8 +12,8 @@ const env = {
     NAME: isDev ? process.env.DEV_DB_NAME : process.env.PRO_DB_NAME
   },
 
-  NODE_ENV: process.env.NODE_ENV,
-  AUTHOR: process.env.AUTHOR
+  NODE_ENV: process.env.NODE_ENV || 'dev',
+  AUTHOR: process.env.AUTHOR || 'unknowns'
 }
 
-module.exports = env
+export default env
