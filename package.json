@@ -4,25 +4,30 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "npx nodemon",
+    "dev": "npx cross-env NODE_ENV=dev nodemon",
     "build": "rimraf ./dist && tsc && tsc-alias",
-    "start": "node dist/index.js",
+    "start": "cross-env NODE_ENV=pro node dist/index.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "prettier": "prettier --check .",
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
+    "@types/mongoose": "^5.11.97",
     "@types/node": "^20.14.12",
     "@typescript-eslint/eslint-plugin": "^7.17.0",
     "@typescript-eslint/parser": "^7.17.0",
+    "bcrypt": "^5.1.1",
     "compression": "^1.7.4",
+    "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "eslint": "^9.7.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.19.2",
     "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.1",
     "morgan": "^1.10.0",
     "nodemon": "^3.1.4",
     "prettier": "^3.3.3",
@@ -33,9 +38,11 @@
     "typescript": "^5.5.4"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/compression": "^1.7.5",
     "@types/express": "^4.17.21",
     "@types/helmet": "^4.0.0",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/morgan": "^1.9.9"
   }
 }
