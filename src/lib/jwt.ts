@@ -1,35 +1,17 @@
 import JWT = require('jsonwebtoken')
-import crypto = require('crypto')
+import env from '~/configs/environments'
 
 const genPairToken = async (
-  payload: string | object,
-  publicKey: JWT.Secret | JWT.GetPublicKeyOrSecret,
-  privateKey: string,
-  passphrase: string
+  payload: string | object
 ) => {
   try {
-    // Giải mã khóa riêng bằng passphrase
-    const decryptedPrivateKey = crypto.createPrivateKey({
-      key: privateKey,
-      format: 'pem',
-      passphrase: passphrase
-    })
-
-    const accessToken = await JWT.sign(payload, decryptedPrivateKey, {
-      algorithm: 'RS256',
+    const accessToken = JWT.sign(payload, env.JWT_ACCESS_SECRET, {
+      algorithm: 'HS256',
       expiresIn: '15m'
     })
-    const refreshToken = await JWT.sign(payload, decryptedPrivateKey, {
-      algorithm: 'RS256',
+    const refreshToken = JWT.sign(payload, env.JWT_REFRESH_SECRET, {
+      algorithm: 'HS256',
       expiresIn: '7d'
-    })
-
-    JWT.verify(accessToken, publicKey, (err, decode) => {
-      if (err) {
-        console.log(`>>> Error verify:: `, err)
-      } else {
-        console.log(`>>> Decode verify:: `, decode)
-      }
     })
 
     return {

@@ -8,9 +8,7 @@ class AccessController {
       const data = await AccessService.signUp(req.body)
       return res.json({
         message: 'Sign up test successful!!',
-        metadata: {
-          data
-        }
+        metadata: data
       })
     } catch (error) {
       next(error)
