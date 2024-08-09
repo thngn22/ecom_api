@@ -3,12 +3,9 @@ import IUserModel = require('./interfaces/IUser.interface')
 
 const UserSchema = new mongoose.Schema(
   {
+    auth_id: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'auth' },
     name: { type: String, required: true, trim: true, maxlength: 150 },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    status: { type: String, enum: ['active', 'inactive'], default: 'inactive' },
-    verify: { type: Boolean, default: false },
-    roles: { type: [String], default: [] }
   },
   { timestamps: true }
 )
