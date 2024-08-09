@@ -1,6 +1,14 @@
-import StatusCodes = require('~/utils/statusCodes');
-import ReasonPhrases = require('~/utils/reasonPhrases');
-import IResponse = require('./interface/IResponse');
+import { Response } from 'express';
+import StatusCodes from '~/utils/statusCodes';
+import ReasonPhrases from '~/utils/reasonPhrases';
+import IResponse from './interface/IResponse';
+
+interface ResponseSuccessOptions {
+  message?: string;
+  statusCode?: number;
+  reasonStatusCode?: string;
+  data?: any;
+}
 
 class ResponseSuccess implements IResponse {
   public message: string;
@@ -13,16 +21,18 @@ class ResponseSuccess implements IResponse {
     statusCode = StatusCodes.OK,
     reasonStatusCode = ReasonPhrases.OK,
     data = {},
-  }: {
-    message: string;
-    statusCode?: number;
-    reasonStatusCode?: string;
-    data?: any;
-  }) {
-    this.message = message || reasonStatusCode;
-    this.name = 'ApiSuccess';
-    this.statusCode = statusCode as number;
+  }: ResponseSuccessOptions) {
+    this.message = message ?? reasonStatusCode;
+    this.statusCode = statusCode;
     this.data = data;
+    this.name = 'ApiSuccess';
+  }
+
+  send(res: Response): void {
+    res.status(this.statusCode).json({
+      message: this.message,
+      data: this.data,
+    });
   }
 }
 
@@ -48,7 +58,7 @@ class CreatedResponse extends ResponseSuccess {
   }
 }
 
-export = {
+export default {
   OKResponse,
   CreatedResponse,
 };

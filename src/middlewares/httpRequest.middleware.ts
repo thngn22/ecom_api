@@ -1,23 +1,29 @@
-import { Request, Response, NextFunction } from 'express'
-import ApiSuccess = require('~/core/response.success')
+import { Request, Response, NextFunction } from 'express';
+import ResponseSuccess from '~/core/response.success';
 
-const httpRequestMiddleware = ({ responseFormatter = true }) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (responseFormatter) {
-      const originalSend = res.send
+import ReasonPhrases from '~/utils/reasonPhrases'
 
-      res.send = function (body?: any): Response {
-        const responseTypes = Object.keys(ApiSuccess).map((e) => e.split('Response')[0])
-        const type = responseTypes[0]
-        const formattedResponse = new ApiSuccess[`${type}Response` as keyof typeof ApiSuccess]({
-          data: body,
-          message: res.locals.message || ''
-        })
-        return originalSend.call(this, formattedResponse)
-      }
-    }
-    next()
-  }
+interface HttpRequestMiddlewareOptions {
+  responseFormatter?: boolean;
 }
 
-export default httpRequestMiddleware
+const httpRequestMiddleware = ({
+  responseFormatter = true,
+}: HttpRequestMiddlewareOptions) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (responseFormatter) {
+      const responseTypes = Object.keys(ResponseSuccess).map((e) => e.split('Response')[0]);
+
+      res.sendData = (data: any, type: string = responseTypes[0], message?: string) => {
+        new ResponseSuccess[`${type}Response` as keyof typeof ResponseSuccess]({
+          message: message || ReasonPhrases.OK,
+          data
+        }).send(res);
+      };
+      
+    }
+    next();
+  };
+};
+
+export default httpRequestMiddleware;

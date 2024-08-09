@@ -37,7 +37,7 @@ const apiKey = async (req: Request, res: Response, next: NextFunction) => {
     return next()
   } catch (error) {
     return {
-      code: 'xxxx',
+      code: '402',
       message: 'ApiKey denied'
     }
   }

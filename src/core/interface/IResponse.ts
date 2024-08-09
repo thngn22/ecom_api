@@ -1,7 +1,9 @@
+import { Response } from 'express';
+
 interface IResponse {
-  statusCode: number | string
-  message: string
-  send?(res: any): void
+  statusCode: number;
+  message: string;
+  send?(res: Response): void;
 }
 
-export = IResponse
+export default IResponse;
