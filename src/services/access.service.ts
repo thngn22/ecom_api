@@ -1,96 +1,47 @@
 import mongoose = require('mongoose')
 import bcrypt = require('bcrypt')
-import crypto = require('crypto')
-
-import TokenService from './token.service'
 
 import UserRepository = require('~/repositories/user.repo')
+import AuthRepository = require('~/repositories/auth.repo')
 
-import { genPairToken } from '~/lib/jwt'
+import { getIntoData } from '~/utils/objects'
+import ResponseError from '~/core/response.error'
+import StatusCodes from '~/utils/statusCodes'
+import ReasonPhrases from '~/utils/reasonPhrases'
 
 interface SignUpInput {
   name: string
   email: string
   password: string
-  status: 'active' | 'inactive'
-  verify: boolean
-  roles: string[]
-  createdAt: Date
-  updatedAt: Date
 }
 
 class AccessService {
+  private static authRepo = new AuthRepository()
   private static userRepo = new UserRepository()
 
-  static signUp = async ({ name, email, password, status, verify, roles }: SignUpInput) => {
-    try {
-      const existUser = await this.userRepo.findOne({ email: email }, { lean: true })
-      if (existUser) {
-        return {
-          code: 'xxx',
-          message: 'Existed User'
-        }
-      }
+  static signUp = async ({ name, email, password }: SignUpInput) => {
+    const existAuth = await this.authRepo.findOne({ email: email }, { lean: true })
+    if (existAuth) {
+      // Nếu tài khoản đã tồn tại, quăng lỗi Conflict
+      throw new ResponseError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT)
+    }
 
-      const passwordHash = await bcrypt.hashSync(password, 10)
+    const passwordHash = await bcrypt.hashSync(password, 10)
+    const newAuth = await this.authRepo.create({ email, password: passwordHash })
+    if (!newAuth) {
+      // Nếu việc tạo mới không thành công, trả về lỗi nội bộ server
+      throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
+    }
 
-      const newUser = await this.userRepo.create({ name, email, password: passwordHash, status, verify, roles })
-      if (newUser) {
-        const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: 'spki',
-            format: 'pem'
-          },
-          privateKeyEncoding: {
-            type: 'pkcs8',
-            format: 'pem',
-            cipher: 'aes-256-cbc',
-            passphrase: 'top secret'
-          }
-        })
+    const newUser = await this.userRepo.create({
+      auth_id: newAuth._id as mongoose.Schema.Types.ObjectId,
+      name,
+      email
+    })
 
-        const publicKeyString = await TokenService.createToKen({
-          userId: newUser._id as mongoose.Schema.Types.ObjectId,
-          publicKey: publicKey
-        })
-        if (!publicKeyString) {
-          return {
-            code: 'xxx',
-            message: 'create publicKeyString errro!!!'
-          }
-        }
-
-        const tokens = await genPairToken(
-          {
-            userId: newUser._id,
-            email
-          },
-          publicKey,
-          privateKey,
-          'top secret'
-        )
-
-        return {
-          code: 201,
-          metadata: {
-            user: newUser,
-            tokens: tokens
-          }
-        }
-      }
-
-      return {
-        code: 401,
-        metadata: null
-      }
-    } catch (error) {
-      const err = error as Error
-      return {
-        code: 'xxx',
-        message: err.message,
-        status: 'error'
-      }
+    return {
+      name: newUser.name,
+      ...getIntoData({ fields: ['email', 'verified', 'roles', '_id'], object: newAuth })
     }
   }
 }

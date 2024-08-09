@@ -34,14 +34,6 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
     this._model.find({}, callback)
   }
 
-  update(_id: mongoose.Types.ObjectId, item: Partial<T>, callback: (error: any, result: any) => void) {
-    this._model.updateOne({ _id: _id }, item, callback)
-  }
-
-  delete(_id: string, callback: (error: any, result: any) => void) {
-    this._model.deleteOne({ _id: this.toObjectId(_id) }, (err: any) => callback(err, null))
-  }
-
   findById(_id: string, callback: (error: any, result: T | null) => void) {
     this._model.findById(_id, callback)
   }
@@ -60,6 +52,26 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
       query = query.lean()
     }
     return query.exec()
+  }
+
+  update(_id: mongoose.Types.ObjectId, item: Partial<T>, callback: (error: any, result: any) => void) {
+    this._model.updateOne({ _id: _id }, item, callback)
+  }
+
+  async findOneAndUpdate(
+    conditions: mongoose.FilterQuery<T>,
+    update: Partial<T>,
+    options: mongoose.QueryOptions = { new: true }
+  ): Promise<T | null> {
+    try {
+      return await this._model.findOneAndUpdate(conditions, update, options).exec()
+    } catch (error) {
+      throw error
+    }
+  }
+
+  delete(_id: string, callback: (error: any, result: any) => void) {
+    this._model.deleteOne({ _id: this.toObjectId(_id) }, (err: any) => callback(err, null))
   }
 
   private toObjectId(_id: string): mongoose.Types.ObjectId {

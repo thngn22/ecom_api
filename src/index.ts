@@ -5,6 +5,8 @@ import compression from 'compression'
 
 import env from '~/configs/environments'
 import APIs_V1 from '~/routes/v1'
+import httpRequestMiddleware from './middlewares/httpRequest.middleware'
+import { handleNotFound, handleError } from '~/middlewares/handleError.middleware'
 
 const app: Express = express()
 
@@ -22,6 +24,8 @@ if (env.NODE_ENV === 'dev') {
   app.use(morgan('dev'))
 }
 
+app.use(httpRequestMiddleware({ responseFormatter: true }))
+
 // init db
 require('~/dbs/init.mongodb')
 
@@ -29,6 +33,8 @@ require('~/dbs/init.mongodb')
 app.use('/api/v1', APIs_V1)
 
 // handing handler
+app.use(handleNotFound)
+app.use(handleError)
 
 const server = app.listen(env.APP.PORT, () => {
   console.log(`Hello ${env.AUTHOR} Server is running on port ${env.APP.PORT}`)

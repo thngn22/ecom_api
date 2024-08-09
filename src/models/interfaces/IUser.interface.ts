@@ -1,14 +1,9 @@
 import mongoose = require('mongoose')
 
 interface IUserModel extends mongoose.Document {
-  name: string;
-  email: string;
-  password: string;
-  status: 'active' | 'inactive';
-  verify: boolean;
-  roles: string[];
-  createdAt: Date;
-  updatedAt: Date;
+  auth_id: mongoose.Schema.Types.ObjectId
+  name: string
+  email: string
 }
 
 export = IUserModel
