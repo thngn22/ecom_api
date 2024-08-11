@@ -1,16 +1,39 @@
-import IRead = require('../interfaces/base/Read')
-import IWrite = require('../interfaces/base/Write')
 import mongoose = require('mongoose')
 
-interface QueryOptions {
+interface MongoDBOptions {
   lean?: boolean
+  select?: string[]
+  unselect?: string[]
+  sort?: string
 }
 
-class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T> {
+interface PaginateOptions extends MongoDBOptions {
+  page?: number
+  limit?: number
+}
+
+class RepositoryBase<T extends mongoose.Document> {
   private _model: mongoose.Model<T>
+  private defaultOption: MongoDBOptions
 
   constructor(schemaModel: mongoose.Model<T>) {
     this._model = schemaModel
+    this.defaultOption = {
+      select: [],
+      unselect: ['_v', 'is_deleted'],
+      sort: 'ctime'
+    }
+  }
+
+  private createSelectFilter(options: MongoDBOptions): any {
+    const select = options.select || []
+    const unselect = options.unselect || []
+    const selectFilter: any = {}
+
+    select.forEach((field) => (selectFilter[field] = 1))
+    unselect.forEach((field) => (selectFilter[field] = 0))
+
+    return selectFilter
   }
 
   async create(item: Partial<T>): Promise<T> {
@@ -22,40 +45,49 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
     }
   }
 
-  async createMany(item: Partial<T>[]): Promise<T[]> {
+  async createMany(items: Partial<T>[]): Promise<T[]> {
     try {
-      return await this._model.create(item)
+      return await this._model.create(items)
     } catch (error) {
       throw error
     }
   }
 
-  retrieve(callback: (error: any, result: T[]) => void) {
-    this._model.find({}, callback)
-  }
+  async findById(_id: string, options?: MongoDBOptions): Promise<T | null> {
+    const findOptions = { ...this.defaultOption, ...options }
+    const query = this._model.findById(_id).select(this.createSelectFilter(findOptions)).sort(findOptions.sort)
 
-  findById(_id: string, callback: (error: any, result: T | null) => void) {
-    this._model.findById(_id, callback)
-  }
-
-  async findOne(conditions: mongoose.FilterQuery<T>, options?: QueryOptions): Promise<T | null> {
-    let query = this._model.findOne(conditions)
-    if (options?.lean) {
-      query = query.lean()
-    }
     return query.exec()
   }
 
-  async find(conditions: mongoose.FilterQuery<T>, options?: QueryOptions): Promise<T[]> {
-    let query = this._model.find(conditions)
-    if (options?.lean) {
-      query = query.lean()
+  async findOne(conditions: mongoose.FilterQuery<T>, options?: MongoDBOptions): Promise<T | null> {
+    const findOptions = { ...this.defaultOption, ...options }
+    let query = this._model
+      .findOne({
+        ...conditions,
+        is_deleted: { $ne: true }
+      })
+      .select(this.createSelectFilter(findOptions))
+      .sort(findOptions.sort)
+
+    if (findOptions.select) {
+      query = query.select(findOptions.select.join(' '))
     }
+
     return query.exec()
   }
 
-  update(_id: mongoose.Types.ObjectId, item: Partial<T>, callback: (error: any, result: any) => void) {
-    this._model.updateOne({ _id: _id }, item, callback)
+  async find(conditions: mongoose.FilterQuery<T>, options?: MongoDBOptions): Promise<T[]> {
+    const findOptions = { ...this.defaultOption, ...options }
+    const query = this._model
+      .find({
+        ...conditions,
+        is_deleted: { $ne: true }
+      })
+      .select(this.createSelectFilter(findOptions))
+      .sort(findOptions.sort)
+
+    return query.exec()
   }
 
   async findOneAndUpdate(
@@ -70,8 +102,20 @@ class RepositoryBase<T extends mongoose.Document> implements IRead<T>, IWrite<T>
     }
   }
 
-  delete(_id: string, callback: (error: any, result: any) => void) {
-    this._model.deleteOne({ _id: this.toObjectId(_id) }, (err: any) => callback(err, null))
+  async update(_id: mongoose.Types.ObjectId, item: Partial<T>): Promise<void> {
+    try {
+      await this._model.updateOne({ _id: _id }, item).exec()
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async delete(_id: string): Promise<void> {
+    try {
+      await this._model.deleteOne({ _id: this.toObjectId(_id) }).exec()
+    } catch (error) {
+      throw error
+    }
   }
 
   private toObjectId(_id: string): mongoose.Types.ObjectId {

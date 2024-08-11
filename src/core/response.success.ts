@@ -1,64 +1,49 @@
-import { Response } from 'express';
-import StatusCodes from '~/utils/statusCodes';
-import ReasonPhrases from '~/utils/reasonPhrases';
-import IResponse from './interface/IResponse';
+import { Response } from 'express'
+import StatusCodes from '~/utils/statusCodes'
+import ReasonPhrases from '~/utils/reasonPhrases'
+import IResponse from './interface/IResponse'
 
 interface ResponseSuccessOptions {
-  message?: string;
-  statusCode?: number;
-  reasonStatusCode?: string;
-  data?: any;
+  statusCode: number
+  reasonStatusCode?: string
+  message?: string
+  data?: any
 }
 
 class ResponseSuccess implements IResponse {
-  public message: string;
-  public statusCode: number;
-  public data: any;
-  public name: string;
+  public name: string
+  public statusCode: number
+  public message: string
+  public data: any
 
-  constructor({
-    message,
-    statusCode = StatusCodes.OK,
-    reasonStatusCode = ReasonPhrases.OK,
-    data = {},
-  }: ResponseSuccessOptions) {
-    this.message = message ?? reasonStatusCode;
-    this.statusCode = statusCode;
-    this.data = data;
-    this.name = 'ApiSuccess';
+  constructor({ statusCode, message, data = {} }: ResponseSuccessOptions) {
+    this.name = 'ApiSuccess'
+    this.statusCode = statusCode
+    this.message = message ?? ''
+    this.data = data
   }
 
   send(res: Response): void {
     res.status(this.statusCode).json({
       message: this.message,
-      data: this.data,
-    });
+      data: this.data
+    })
   }
 }
 
 class OKResponse extends ResponseSuccess {
-  constructor({ message, data }: { message: string; data: any }) {
-    super({ message, data });
+  constructor({ data }: { data: any }) {
+    super({ statusCode: StatusCodes.OK, message: ReasonPhrases.OK, data })
   }
 }
 
 class CreatedResponse extends ResponseSuccess {
-  constructor({
-    message,
-    statusCode = StatusCodes.CREATED,
-    reasonStatusCode = ReasonPhrases.CREATED,
-    data,
-  }: {
-    message: string;
-    statusCode?: number;
-    reasonStatusCode?: string;
-    data: any;
-  }) {
-    super({ message, statusCode, reasonStatusCode, data });
+  constructor({ data }: { data: any }) {
+    super({ statusCode: StatusCodes.CREATED, message: ReasonPhrases.CREATED, data })
   }
 }
 
 export default {
   OKResponse,
-  CreatedResponse,
-};
+  CreatedResponse
+}
