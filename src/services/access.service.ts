@@ -8,6 +8,7 @@ import { getIntoData } from '~/utils/objects'
 import ResponseError from '~/core/response.error'
 import StatusCodes from '~/utils/statusCodes'
 import ReasonPhrases from '~/utils/reasonPhrases'
+import { genPairToken } from '~/lib/jwt'
 
 interface SignUpInput {
   name: string
@@ -43,6 +44,37 @@ class AccessService {
       name: newUser.name,
       ...getIntoData({ fields: ['email', 'verified', 'roles', '_id'], object: newAuth })
     }
+  }
+
+  /*
+    1 - check email
+    2 - match password
+    3 - create access & refreshToken, and save then
+    4 - update refreshTokenUsed, and render tokens to response
+   */
+  static login = async ({ email, password }: SignUpInput) => {
+    const found = await this.authRepo.findOne({ email: email }, { lean: true })
+    if (!found) {
+      throw new ResponseError(StatusCodes.NOT_FOUND, "User's email or password is incorrect")
+    }
+
+    const math = await bcrypt.compareSync(password, found.password)
+    if (!math) {
+      throw new ResponseError(StatusCodes.BAD_REQUEST, "User's email or password is incorrect")
+    }
+
+    const tokens = await genPairToken({ id: found._id, email: found.email })
+    const updateRefreshTokenUsed = [tokens.refreshToken, ...found.refresh_token_used]
+    if (found.refresh_token_used.length >= 15) {
+      updateRefreshTokenUsed.pop()
+    }
+
+    this.authRepo.findOneAndUpdate(
+      { _id: found._id },
+      { refresh_token: tokens.refreshToken, refresh_token_used: updateRefreshTokenUsed }
+    )
+
+    return tokens
   }
 }
 

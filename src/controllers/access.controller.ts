@@ -4,7 +4,11 @@ import AccessService = require('~/services/access.service')
 
 class AccessController {
   signUp = async (req: Request, res: Response, next: NextFunction) => {
-    res.sendData(await AccessService.signUp(req.body))
+    res.sendData(await AccessService.signUp(req.body), 'Created')
+  }
+
+  login = async (req: Request, res: Response, next: NextFunction) => {
+    res.sendData(await AccessService.login(req.body))
   }
 }
 
