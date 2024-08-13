@@ -15,7 +15,7 @@ class AccessController {
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as IAuthModel
-    res.sendData(await AccessService.logout(user.email))
+    res.sendData(await AccessService.logout(user, req))
   }
 }
 

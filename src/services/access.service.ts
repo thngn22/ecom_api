@@ -1,5 +1,6 @@
 import mongoose = require('mongoose')
 import bcrypt = require('bcrypt')
+import { Request } from 'express'
 
 import UserRepository = require('~/repositories/user.repo')
 import AuthRepository from '~/repositories/auth.repo'
@@ -58,14 +59,27 @@ class AccessService {
 
     await AuthRepository.findOneAndUpdate(
       { _id: user._id },
-      { refresh_token: tokens.refreshToken, refresh_token_used: updateRefreshTokenUsed }
+      {
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
+        refresh_token_used: updateRefreshTokenUsed
+      }
     )
 
     return tokens
   }
 
-  static logout = async (email: string) => {
-    const result = AuthRepository.deleteRefreshToken({ email: email }, { refresh_token: '' })
+  static logout = async (user: IAuthModel, req: Request) => {
+    const accessToken = req.headers['authorization'] as string
+    if (!accessToken) throw new ResponseError(StatusCodes.BAD_REQUEST, 'Missing token')
+
+    console.log('>>> tokens::', accessToken.split(' ')[1])
+    console.log('>>> tokens user::', user.access_token)
+
+    if (accessToken.split(' ')[1] !== user.access_token)
+      throw new ResponseError(StatusCodes.BAD_REQUEST, 'Token was removed')
+
+    const result = AuthRepository.deleteRefreshToken({ email: user.email }, { access_token: '', refresh_token: '' })
     if (!result) throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
 
     return true

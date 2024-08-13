@@ -28,7 +28,7 @@ passport.use(
           }
           return done(null, existedUserLogin)
         }
-        return done(new ResponseError(StatusCodes.BAD_REQUEST, 'Invalid email/password'))
+        return done(new ResponseError(StatusCodes.BAD_REQUEST, 'Not registered yet'))
       } catch (error) {
         return done(error)
       }

@@ -7,6 +7,7 @@ const AuthSchema = new mongoose.Schema<IAuthModel>(
     password: { type: String, required: true },
     verified: { type: Boolean, default: false },
     roles: { type: [String], default: ['user'] },
+    access_token: {type: String, default: ''},
     refresh_token: { type: String, default: '' },
     refresh_token_used: { type: [String], default: [] }
   },
