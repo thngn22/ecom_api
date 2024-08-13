@@ -45,8 +45,6 @@ passport.use(
     },
     async (payload: { email: string; exp: number }, done: (error: any, user?: IAuthModel | boolean) => void) => {
       try {
-        console.log('>>> payload::', payload);
-        
         if (!payload.email) return done(new ResponseError(StatusCodes.BAD_REQUEST, 'Email not existed'))
 
         const user = await AuthRepositories.findOne({ email: payload.email }, { lean: true })

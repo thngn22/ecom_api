@@ -9,6 +9,7 @@ import ResponseError from '~/core/response.error'
 import StatusCodes from '~/utils/statusCodes'
 import ReasonPhrases from '~/utils/reasonPhrases'
 import { genPairToken } from '~/lib/jwt'
+import IAuthModel from '~/models/interfaces/IAuth.interface'
 
 interface SignUpInput {
   name: string
@@ -18,8 +19,6 @@ interface SignUpInput {
 
 class AccessService {
   static signUp = async ({ name, email, password }: SignUpInput) => {
-    console.log('vao dc service')
-
     const existAuth = await AuthRepository.findOne({ email: email }, { lean: true })
     if (existAuth) {
       // Nếu tài khoản đã tồn tại, quăng lỗi Conflict
@@ -46,30 +45,19 @@ class AccessService {
   }
 
   /*
-    1 - check email
-    2 - match password
-    3 - create access & refreshToken, and save then
-    4 - update refreshTokenUsed, and render tokens to response
+    1 - create access & refreshToken, and save then
+    2 - update refreshTokenUsed, and render tokens to response
    */
-  static login = async ({ email, password }: SignUpInput) => {
-    const found = await AuthRepository.findOne({ email: email }, { lean: true })
-    if (!found) {
-      throw new ResponseError(StatusCodes.NOT_FOUND, "User's email or password is incorrect")
-    }
+  static login = async (user: IAuthModel) => {
+    const tokens = await genPairToken({ id: user._id, email: user.email })
+    const updateRefreshTokenUsed = [tokens.refreshToken, ...user.refresh_token_used]
 
-    const math = await bcrypt.compareSync(password, found.password)
-    if (!math) {
-      throw new ResponseError(StatusCodes.BAD_REQUEST, "User's email or password is incorrect")
-    }
-
-    const tokens = await genPairToken({ id: found._id, email: found.email })
-    const updateRefreshTokenUsed = [tokens.refreshToken, ...found.refresh_token_used]
-    if (found.refresh_token_used.length >= 15) {
+    if (user.refresh_token_used.length >= 15) {
       updateRefreshTokenUsed.pop()
     }
 
-    AuthRepository.findOneAndUpdate(
-      { _id: found._id },
+    await AuthRepository.findOneAndUpdate(
+      { _id: user._id },
       { refresh_token: tokens.refreshToken, refresh_token_used: updateRefreshTokenUsed }
     )
 

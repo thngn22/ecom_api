@@ -10,8 +10,6 @@ class AuthRepository extends RepositoryBase<IAuthModel> {
   }
 
   create = (item: Partial<IAuthModel>): Promise<IAuthModel> => {
-    console.log('vao dc repo')
-
     return super.create(item)
   }
 
