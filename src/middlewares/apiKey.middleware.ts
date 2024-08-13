@@ -33,7 +33,7 @@ const apiKey = async (req: Request, res: Response, next: NextFunction) => {
         message: 'Fobidden Error'
       })
     }
-
+    
     return next()
   } catch (error) {
     return {

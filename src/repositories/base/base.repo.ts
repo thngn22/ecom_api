@@ -1,16 +1,6 @@
-import mongoose = require('mongoose')
-
-interface MongoDBOptions {
-  lean?: boolean
-  select?: string[]
-  unselect?: string[]
-  sort?: string
-}
-
-interface PaginateOptions extends MongoDBOptions {
-  page?: number
-  limit?: number
-}
+import mongoose from 'mongoose'
+import MongoDBOptions from '../interfaces/types/MongoDBOptions'
+import PaginateOptions from '../interfaces/types/PaginateOptions'
 
 class RepositoryBase<T extends mongoose.Document> {
   private _model: mongoose.Model<T>

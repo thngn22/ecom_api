@@ -2,7 +2,7 @@ import mongoose = require('mongoose')
 import bcrypt = require('bcrypt')
 
 import UserRepository = require('~/repositories/user.repo')
-import AuthRepository = require('~/repositories/auth.repo')
+import AuthRepository from '~/repositories/auth.repo'
 
 import { getIntoData } from '~/utils/objects'
 import ResponseError from '~/core/response.error'
@@ -17,32 +17,31 @@ interface SignUpInput {
 }
 
 class AccessService {
-  private static authRepo = new AuthRepository()
-  private static userRepo = new UserRepository()
-
   static signUp = async ({ name, email, password }: SignUpInput) => {
-    const existAuth = await this.authRepo.findOne({ email: email }, { lean: true })
+    console.log('vao dc service')
+
+    const existAuth = await AuthRepository.findOne({ email: email }, { lean: true })
     if (existAuth) {
       // Nếu tài khoản đã tồn tại, quăng lỗi Conflict
       throw new ResponseError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT)
     }
 
     const passwordHash = await bcrypt.hashSync(password, 10)
-    const newAuth = await this.authRepo.create({ email, password: passwordHash })
+    const newAuth = await AuthRepository.create({ email, password: passwordHash })
     if (!newAuth) {
       // Nếu việc tạo mới không thành công, trả về lỗi nội bộ server
       throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
     }
 
-    const newUser = await this.userRepo.create({
+    const newUser = await UserRepository.create({
       auth_id: newAuth._id as mongoose.Schema.Types.ObjectId,
       name,
       email
     })
 
     return {
-      name: newUser.name,
-      ...getIntoData({ fields: ['email', 'verified', 'roles', '_id'], object: newAuth })
+      ...getIntoData({ fields: ['_id', 'email', 'verified', 'roles'], object: newAuth }),
+      name: newUser.name
     }
   }
 
@@ -53,7 +52,7 @@ class AccessService {
     4 - update refreshTokenUsed, and render tokens to response
    */
   static login = async ({ email, password }: SignUpInput) => {
-    const found = await this.authRepo.findOne({ email: email }, { lean: true })
+    const found = await AuthRepository.findOne({ email: email }, { lean: true })
     if (!found) {
       throw new ResponseError(StatusCodes.NOT_FOUND, "User's email or password is incorrect")
     }
@@ -69,12 +68,19 @@ class AccessService {
       updateRefreshTokenUsed.pop()
     }
 
-    this.authRepo.findOneAndUpdate(
+    AuthRepository.findOneAndUpdate(
       { _id: found._id },
       { refresh_token: tokens.refreshToken, refresh_token_used: updateRefreshTokenUsed }
     )
 
     return tokens
+  }
+
+  static logout = async (email: string) => {
+    const result = AuthRepository.deleteRefreshToken({ email: email }, { refresh_token: '' })
+    if (!result) throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
+
+    return true
   }
 }
 
