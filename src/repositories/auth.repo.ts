@@ -9,7 +9,7 @@ class AuthRepository extends RepositoryBase<IAuthModel> {
     super(AuthModel)
   }
 
-  create = (item: Partial<IAuthModel>): Promise<IAuthModel> => {
+  create(item: Partial<IAuthModel>): Promise<IAuthModel> {
     return super.create(item)
   }
 
