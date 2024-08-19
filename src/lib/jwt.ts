@@ -1,9 +1,8 @@
 import JWT = require('jsonwebtoken')
 import env from '~/configs/environments'
+import IPayloadJWT from './types/jwt.interface'
 
-const genPairToken = async (
-  payload: string | object
-) => {
+const genPairToken = async (payload: IPayloadJWT) => {
   try {
     const accessToken = JWT.sign(payload, env.JWT_ACCESS_SECRET, {
       algorithm: 'HS256',
@@ -24,4 +23,14 @@ const genPairToken = async (
   }
 }
 
-export { genPairToken }
+const decodeRefreshToken = (token: string): IPayloadJWT | null => {
+  try {
+    return JWT.verify(token, env.JWT_REFRESH_SECRET, {
+      algorithms: ['HS256']
+    }) as IPayloadJWT;
+  } catch {
+    return null;
+  }
+}
+
+export { genPairToken, decodeRefreshToken }

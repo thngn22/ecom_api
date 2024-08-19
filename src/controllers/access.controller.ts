@@ -10,12 +10,17 @@ class AccessController {
 
   login = async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as IAuthModel
-    res.sendData(await AccessService.login(user))
+    res.sendData(await AccessService.login(user, res))
   }
 
   logout = async (req: Request, res: Response, next: NextFunction) => {
     const user = req.user as IAuthModel
-    res.sendData(await AccessService.logout(user, req))
+    res.sendData(await AccessService.logout(user, req, res))
+  }
+
+  refresh = async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user as IAuthModel
+    res.sendData(await AccessService.refresh(user, res))
   }
 }
 

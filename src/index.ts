@@ -2,6 +2,7 @@ import express, { Express } from 'express'
 import morgan from 'morgan'
 import helmet from 'helmet'
 import compression from 'compression'
+import cookieParser from 'cookie-parser';
 
 import env from '~/configs/environments'
 import APIs_V1 from '~/routes/v1'
@@ -19,6 +20,7 @@ app.use(
     extended: true
   })
 )
+app.use(cookieParser())
 
 if (env.NODE_ENV === 'dev') {
   app.use(morgan('dev'))
