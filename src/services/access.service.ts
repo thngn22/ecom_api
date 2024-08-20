@@ -23,14 +23,14 @@ class AccessService {
     const existAuth = await AuthRepository.findOne({ email: email }, { lean: true })
     if (existAuth) {
       // Nếu tài khoản đã tồn tại, quăng lỗi Conflict
-      throw new ResponseError(StatusCodes.CONFLICT, ReasonPhrases.CONFLICT)
+      throw new ResponseError(ReasonPhrases.CONFLICT, StatusCodes.CONFLICT)
     }
 
     const passwordHash = await bcrypt.hashSync(password, 10)
     const newAuth = await AuthRepository.create({ email, password: passwordHash })
     if (!newAuth) {
       // Nếu việc tạo mới không thành công, trả về lỗi nội bộ server
-      throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
+      throw new ResponseError(ReasonPhrases.INTERNAL_SERVER_ERROR, StatusCodes.INTERNAL_SERVER_ERROR)
     }
 
     const newUser = await UserRepository.create({
@@ -79,10 +79,10 @@ class AccessService {
 
   static logout = async (user: IAuthModel, req: Request, res: Response) => {
     const accessToken = req.headers['authorization'] as string
-    if (!accessToken) throw new ResponseError(StatusCodes.BAD_REQUEST, 'Missing token')
+    if (!accessToken) throw new ResponseError('Missing token', StatusCodes.BAD_REQUEST)
 
     if (accessToken.split(' ')[1] !== user.access_token)
-      throw new ResponseError(StatusCodes.BAD_REQUEST, 'Token was removed')
+      throw new ResponseError('Token was removed', StatusCodes.BAD_REQUEST)
 
     res.clearCookie('refreshToken', {
       httpOnly: true,
@@ -91,7 +91,7 @@ class AccessService {
     })
 
     const result = AuthRepository.deleteRefreshToken({ email: user.email }, { access_token: '', refresh_token: '' })
-    if (!result) throw new ResponseError(StatusCodes.INTERNAL_SERVER_ERROR, ReasonPhrases.INTERNAL_SERVER_ERROR)
+    if (!result) throw new ResponseError(ReasonPhrases.INTERNAL_SERVER_ERROR, StatusCodes.INTERNAL_SERVER_ERROR)
 
     return true
   }

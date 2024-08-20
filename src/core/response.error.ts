@@ -1,9 +1,9 @@
-import IResponse from './interface/IResponse';
+import IResponse from './interface/IResponse'
 
 class ResponseError extends Error implements IResponse {
   public statusCode: number
 
-  constructor(statusCode: number, message: string) {
+  constructor(message?: string, statusCode: number = 500) {
     super(message)
     this.name = 'ApiError'
     this.statusCode = statusCode
