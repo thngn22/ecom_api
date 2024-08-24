@@ -8,11 +8,6 @@ class CategoryRepository extends RepositoryBase<ICategoryModel> {
   constructor() {
     super(CategoryModel)
   }
-
-  create(item: Partial<ICategoryModel>): Promise<ICategoryModel> {
-    return super.create(item)
-  }
-
   findOne(conditions: FilterQuery<ICategoryModel>, options?: MongoDBOptions): Promise<ICategoryModel | null> {
     return super.findOne(conditions, options)
   }
