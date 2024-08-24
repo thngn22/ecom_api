@@ -60,6 +60,26 @@ class AccessService {
       root_id
     })
   }
+
+  static getChildCategory = async ({ parent_id = null }: ICategoryModel) => {
+    let query
+    if (parent_id) {
+      const foundParentCate = await categoryRepo.findById(parent_id.toString(), { lean: true })
+      if (!foundParentCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
+      query = {
+        root_id: foundParentCate.root_id,
+        left: { $gt: foundParentCate.left },
+        right: { $lte: foundParentCate.right }
+      }
+    } else {
+      query = { parent_id: null }
+    }
+
+    return await categoryRepo.find(query, {
+      unselect: ['left', 'right', 'root_id'],
+      sort: 'left'
+    })
+  }
 }
 
 export = AccessService
