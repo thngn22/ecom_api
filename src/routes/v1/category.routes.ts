@@ -1,13 +1,13 @@
 import express from 'express'
-import passport from '~/lib/passport'
 
 import { asyncHandler } from '~/helper'
-import { verifyRefreshToken } from '~/middlewares/jwt.middleware'
+import { verifyAccessToken } from '~/middlewares/jwt.middleware'
 import CategoryController = require('~/controllers/category.controller')
+import onlyRole from '~/middlewares/role.middleware'
 
 const categoryRoutes = express.Router()
 
-categoryRoutes.use(passport.authenticate('jwt', { session: false }))
+categoryRoutes.use(verifyAccessToken, onlyRole(['ADMIN']))
 
 categoryRoutes.route('').post(asyncHandler(CategoryController.createCate))
 

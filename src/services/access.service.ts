@@ -79,7 +79,6 @@ class AccessService {
 
   static logout = async (user: IAuthModel, req: Request, res: Response) => {
     const accessToken = req.headers['authorization'] as string
-    if (!accessToken) throw new ResponseError('Missing token', StatusCodes.BAD_REQUEST)
 
     if (accessToken.split(' ')[1] !== user.access_token)
       throw new ResponseError('Token was removed', StatusCodes.BAD_REQUEST)

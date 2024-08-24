@@ -23,14 +23,24 @@ const genPairToken = async (payload: IPayloadJWT) => {
   }
 }
 
+const decodeAccessToken = (token: string): IPayloadJWT | null => {
+  try {
+    return JWT.verify(token, env.JWT_ACCESS_SECRET, {
+      algorithms: ['HS256']
+    }) as IPayloadJWT
+  } catch {
+    return null
+  }
+}
+
 const decodeRefreshToken = (token: string): IPayloadJWT | null => {
   try {
     return JWT.verify(token, env.JWT_REFRESH_SECRET, {
       algorithms: ['HS256']
-    }) as IPayloadJWT;
+    }) as IPayloadJWT
   } catch {
-    return null;
+    return null
   }
 }
 
-export { genPairToken, decodeRefreshToken }
+export { genPairToken, decodeAccessToken, decodeRefreshToken }

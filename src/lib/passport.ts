@@ -36,31 +36,4 @@ passport.use(
   )
 )
 
-passport.use(
-  new JwtStrategy(
-    {
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: env.JWT_ACCESS_SECRET,
-      algorithms: ['HS256'],
-      passReqToCallback: true
-    },
-    async (req, payload: { email: string; exp: number }, done: (error: any, user?: IAuthModel | boolean) => void) => {
-      try {
-        if (!payload.email) {
-          return done(new ResponseError('Email not existed', StatusCodes.BAD_REQUEST), false)
-        }
-
-        const user = await AuthRepositories.findOne({ email: payload.email }, { lean: true })
-        if (!user || payload.exp * 1000 < Date.now()) {
-          return done(new ResponseError(ReasonPhrases.BAD_REQUEST, StatusCodes.BAD_REQUEST), false)
-        }
-
-        return done(null, user)
-      } catch (error) {
-        return done(new ResponseError(ReasonPhrases.INTERNAL_SERVER_ERROR, StatusCodes.INTERNAL_SERVER_ERROR), false)
-      }
-    }
-  )
-)
-
 export default passport

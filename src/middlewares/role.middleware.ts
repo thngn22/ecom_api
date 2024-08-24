@@ -18,7 +18,8 @@ const onlyRole = (roles: (keyof typeof ROLES)[]) => {
       return ROLES[role]
     })
 
-    if (!rolesValue.includes(req.user.roles[0])) throw new ResponseError(ReasonPhrases.FORBIDDEN)
+    if (!rolesValue.includes(req.user.roles[0]))
+      throw new ResponseError(ReasonPhrases.FORBIDDEN, StatusCodes.UNAUTHORIZED)
     next()
   }
 }
