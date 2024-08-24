@@ -14,6 +14,6 @@ const AuthSchema = new mongoose.Schema<IAuthModel>(
   { timestamps: true }
 )
 
-const AuthModel = mongoose.model<IAuthModel>('Auth', AuthSchema)
+const AuthModel = mongoose.model<IAuthModel>('auth', AuthSchema)
 
 export = AuthModel
