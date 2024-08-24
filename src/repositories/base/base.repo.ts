@@ -20,8 +20,11 @@ class RepositoryBase<T extends mongoose.Document> {
     const unselect = options.unselect || []
     const selectFilter: any = {}
 
-    select.forEach((field) => (selectFilter[field] = 1))
-    unselect.forEach((field) => (selectFilter[field] = 0))
+    if (select.length > 0) {
+      select.forEach((field) => (selectFilter[field] = 1))
+    } else if (unselect.length > 0) {
+      unselect.forEach((field) => (selectFilter[field] = 0))
+    }
 
     return selectFilter
   }
@@ -95,6 +98,17 @@ class RepositoryBase<T extends mongoose.Document> {
   async update(_id: mongoose.Types.ObjectId, item: Partial<T>): Promise<void> {
     try {
       await this._model.updateOne({ _id: _id }, item).exec()
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async updateMany(
+    filter: mongoose.FilterQuery<T>,
+    update: mongoose.UpdateQuery<T>
+  ): Promise<mongoose.UpdateWriteOpResult> {
+    try {
+      return await this._model.updateMany(filter, update).exec()
     } catch (error) {
       throw error
     }

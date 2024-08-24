@@ -13,9 +13,7 @@ accessRoutes
   .route('/login')
   .post(passport.authenticate('local', { session: false }), asyncHandler(AccessController.login))
 
-accessRoutes
-  .route('/logout')
-  .post(passport.authenticate('jwt', { session: false }), asyncHandler(AccessController.logout))
+accessRoutes.use(passport.authenticate('jwt', { session: false }))
+accessRoutes.route('/logout').post(asyncHandler(AccessController.logout))
 
-accessRoutes.route('/refresh').post(verifyRefreshToken, asyncHandler(AccessController.refresh))
 export default accessRoutes
