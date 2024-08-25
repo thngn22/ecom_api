@@ -1,6 +1,7 @@
 import mongoose = require('mongoose')
 
 interface ICategoryModel extends mongoose.Document {
+  attribute_id: mongoose.Schema.Types.ObjectId
   name: string
   root_id: string
   image: string

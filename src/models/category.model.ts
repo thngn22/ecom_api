@@ -3,6 +3,7 @@ import ICategoryModel = require('./interfaces/ICategory.interface')
 
 const CategorySchema = new mongoose.Schema<ICategoryModel>(
   {
+    attribute_id: { type: mongoose.Schema.Types.ObjectId, ref: 'attribute' },
     name: { type: String, required: true, unique: true },
     root_id: { type: String, required: true },
     parent_id: { type: mongoose.Schema.Types.ObjectId, ref: 'category' },

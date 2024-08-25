@@ -7,7 +7,7 @@ import ResponseError from '~/core/response.error'
 import StatusCodes from '~/utils/statusCodes'
 import categoryRepo from '~/repositories/category.repo'
 
-class AccessService {
+class CategoryService {
   static createCate = async ({ name, image, parent_id = null }: ICategoryModel) => {
     let right
     let root_id = v4()
@@ -118,4 +118,4 @@ class AccessService {
   }
 }
 
-export = AccessService
+export = CategoryService
