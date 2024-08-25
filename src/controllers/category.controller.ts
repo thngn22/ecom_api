@@ -10,6 +10,19 @@ class CategoryController {
   createCate = async (req: Request, res: Response) => {
     res.sendData(await CategoryService.createCate(req.body), 'Created')
   }
+
+  updateCate = async (req: Request, res: Response) => {
+    res.sendData(
+      await CategoryService.updateCategory({
+        id: req.params.id,
+        ...req.body
+      })
+    )
+  }
+
+  deleteCate = async (req: Request, res: Response) => {
+    res.sendData(await CategoryService.deletaCategory(req.params.id), 'OK')
+  }
 }
 
 export = new CategoryController()

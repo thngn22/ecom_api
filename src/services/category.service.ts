@@ -80,6 +80,42 @@ class AccessService {
       sort: 'left'
     })
   }
+
+  static updateCategory = async ({ id, name, image }: ICategoryModel) => {
+    const existedCate = await categoryRepo.findById(id)
+    if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
+
+    return await categoryRepo.findOneAndUpdate({ _id: id }, { name, image })
+  }
+
+  static deletaCategory = async (id: string) => {
+    const existedCate = await categoryRepo.findById(id)
+    if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
+
+    const width = existedCate.right - existedCate.left + 1
+    await categoryRepo.deleteMany({
+      root_id: existedCate.root_id,
+      left: { $gte: existedCate.left },
+      right: { $lte: existedCate.right }
+    })
+
+    await categoryRepo.updateMany(
+      {
+        right: { $gt: existedCate.right }
+      },
+      {
+        $inc: { right: -width }
+      }
+    )
+    await categoryRepo.updateMany(
+      {
+        left: { $gt: existedCate.right }
+      },
+      { $inc: { left: -width } }
+    )
+
+    return 'delete successfully!!'
+  }
 }
 
 export = AccessService
