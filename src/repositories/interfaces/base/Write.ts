@@ -5,7 +5,7 @@ interface Write<T> {
   update: (_id: mongoose.Types.ObjectId, item: T, callback: (error: any, result: any) => void) => void
   updateMany: (
     filter: mongoose.FilterQuery<T>,
-    update: mongoose.UpdateQuery<T>,
+    update: mongoose.UpdateQuery<T>
   ) => Promise<mongoose.UpdateWriteOpResult>
   findOneAndUpdate: (
     conditions: mongoose.FilterQuery<T>,
@@ -13,6 +13,7 @@ interface Write<T> {
     options?: mongoose.QueryOptions
   ) => Promise<T | null>
   delete: (_id: string, callback: (error: any, result: any) => void) => void
+  deleteMany: (filter: mongoose.FilterQuery<T>) => Promise<mongoose.mongo.DeleteResult>
 }
 
 export = Write

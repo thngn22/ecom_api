@@ -10,8 +10,6 @@ class ApiKeyRepository extends RepositoryBase<IApiKeyModel> {
   }
 
   findOne(conditions: FilterQuery<IApiKeyModel>, options?: MongoDBOptions): Promise<IApiKeyModel | null> {
-    console.log('repo apikey')
-
     return super.findOne(conditions, options)
   }
 }

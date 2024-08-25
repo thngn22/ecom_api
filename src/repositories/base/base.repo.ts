@@ -1,8 +1,10 @@
 import mongoose from 'mongoose'
 import MongoDBOptions from '../interfaces/types/MongoDBOptions'
 import PaginateOptions from '../interfaces/types/PaginateOptions'
+import Read from '../interfaces/base/Read'
+import Write from '../interfaces/base/Write'
 
-class RepositoryBase<T extends mongoose.Document> {
+class RepositoryBase<T extends mongoose.Document> implements Read<T>, Write<T> {
   private _model: mongoose.Model<T>
   private defaultOption: MongoDBOptions
 
@@ -46,7 +48,7 @@ class RepositoryBase<T extends mongoose.Document> {
     }
   }
 
-  async findById(_id: string, options?: MongoDBOptions): Promise<T | null> {
+  async findById(_id: string | null, options?: MongoDBOptions): Promise<T | null> {
     const findOptions = { ...this.defaultOption, ...options }
     const query = this._model.findById(_id).select(this.createSelectFilter(findOptions)).sort(findOptions.sort)
 
@@ -117,6 +119,15 @@ class RepositoryBase<T extends mongoose.Document> {
   async delete(_id: string): Promise<void> {
     try {
       await this._model.deleteOne({ _id: this.toObjectId(_id) }).exec()
+    } catch (error) {
+      throw error
+    }
+  }
+
+  async deleteMany(filter: mongoose.FilterQuery<T>): Promise<mongoose.mongo.DeleteResult> {
+    try {
+      const result = await this._model.deleteMany(filter).exec()
+      return result
     } catch (error) {
       throw error
     }
