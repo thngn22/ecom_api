@@ -1,7 +1,9 @@
 import mongoose = require('mongoose')
 
 interface IAttributeModel extends mongoose.Document {
-  attributes: mongoose.Schema.Types.Mixed
+  name: string
+  type: 'string' | 'number' | 'array' | 'object'
+  required: boolean
 }
 
 export = IAttributeModel

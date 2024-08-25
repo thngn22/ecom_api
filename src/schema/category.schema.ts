@@ -8,7 +8,10 @@ const getChildCategory = z.object({
 const create = z.object({
   name: z.string().nonempty('Name is required'),
   image: z.string().optional(),
-  parent_id: z.union([z.string(), z.null()]).optional()
+  parent_id: z.union([z.string(), z.null()]).optional(),
+  attributes: z.array(id).nonempty({
+    message: 'Attributes array cannot be empty'
+  })
 })
 
 const categoryId = z.object({

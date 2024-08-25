@@ -6,9 +6,25 @@ import CategoryRepo from '~/repositories/category.repo'
 import ResponseError from '~/core/response.error'
 import StatusCodes from '~/utils/statusCodes'
 import categoryRepo from '~/repositories/category.repo'
+import attributeRepo from '~/repositories/attribute.repo'
 
 class CategoryService {
-  static createCate = async ({ name, image, parent_id = null }: ICategoryModel) => {
+  /**
+   *
+   * @param {string} name
+   * @param {string} image
+   * @param {id | null} parent_id - null if you want to create root Category
+   * @param {array} attributes
+   * @returns result
+   *
+   * @example
+   * {
+   *    "name": "nameOfCategory",
+   *    "image": "urlImage",
+   *    "attributes": ["66cb521fea2f0154d2246212", "66cb521fea2f0154d2246213"]
+   * }
+   */
+  static createCate = async ({ name, image, parent_id = null, attributes }: ICategoryModel) => {
     let right
     let root_id = v4()
     if (parent_id) {
@@ -51,14 +67,24 @@ class CategoryService {
       }
     }
 
-    return await categoryRepo.create({
-      name,
-      image,
-      parent_id,
-      left: right,
-      right: right + 1,
-      root_id
-    })
+    if (attributes.length > 0) {
+      await Promise.all(
+        attributes.map(async (item) => {
+          const existedAttribute = await attributeRepo.findById(item.toString())
+          if (!existedAttribute) throw new ResponseError('Attribute not existed', StatusCodes.BAD_REQUEST)
+        })
+      )
+      return await categoryRepo.create({
+        name,
+        image,
+        parent_id,
+        attributes,
+        left: right,
+        right: right + 1,
+        root_id
+      })
+    }
+    throw new ResponseError('attributes must have at least 1 element', StatusCodes.BAD_REQUEST)
   }
 
   static getChildCategory = async ({ parent_id = null }: ICategoryModel) => {

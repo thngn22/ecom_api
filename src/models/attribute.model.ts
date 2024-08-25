@@ -3,7 +3,9 @@ import IAttributeModel = require('./interfaces/IAttribute.inteface')
 
 const AttributeSchema = new mongoose.Schema(
   {
-    attributes: { type: mongoose.Schema.Types.Mixed, required: true }
+    name: { type: String, require: true },
+    type: { type: String, require: true },
+    require: { type: Boolean, default: false }
   },
   { timestamps: true }
 )

@@ -11,6 +11,6 @@ Router.use(apiKey)
 
 Router.use('/access', accessRoutes)
 Router.use('/category', categoryRoutes)
-Router.use('/attributes', attributeRoutes)
+Router.use('/attribute', attributeRoutes)
 
 export default Router
