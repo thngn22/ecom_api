@@ -87,7 +87,7 @@ class RepositoryBase<T extends mongoose.Document> implements Read<T>, Write<T> {
 
   async findOneAndUpdate(
     conditions: mongoose.FilterQuery<T>,
-    update: Partial<T>,
+    update: Partial<T> | mongoose.UpdateQuery<T>,
     options: mongoose.QueryOptions = { new: true }
   ): Promise<T | null> {
     try {

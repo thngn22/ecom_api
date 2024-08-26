@@ -6,39 +6,40 @@ import onlyRole from '~/middlewares/role.middleware'
 import validate from '~/middlewares/validate.middleware'
 
 import attributeSchema from '~/schema/attribute.schema'
-import attributeController from '~/controllers/attribute.controller'
+import AttributeController from '~/controllers/attribute.controller'
 
 const attributeRoutes = express.Router()
 
-// categoryRoutes.route('').get(
-//   validate({
-//     body: categorySchema.getChildCategory
-//   }),
-//   asyncHandler(CategoryController.getChildCategory)
-// )
+//Verify accessToken
+attributeRoutes.use(verifyAccessToken)
 
-//Permission ADMIN
-attributeRoutes.use(verifyAccessToken, onlyRole(['ADMIN']))
+//Permission ADMIN,SHOP only
+attributeRoutes.route('').get(onlyRole(['ADMIN', 'SHOP']), asyncHandler(AttributeController.getAllAttributes))
+
+//Permission ADMIN only
 attributeRoutes.route('').post(
+  onlyRole(['ADMIN']),
   validate({
     body: attributeSchema.create
   }),
-  asyncHandler(attributeController.createAttribute)
+  asyncHandler(AttributeController.createAttribute)
 )
 
-// categoryRoutes.route('/:id').put(
-//   validate({
-//     params: categorySchema.categoryId,
-//     body: categorySchema.update
-//   }),
-//   asyncHandler(CategoryController.updateCate)
-// )
+attributeRoutes.route('/:id').put(
+  onlyRole(['ADMIN']),
+  validate({
+    params: attributeSchema.attributeId,
+    body: attributeSchema.update
+  }),
+  asyncHandler(AttributeController.updateAttribute)
+)
 
-// categoryRoutes.route('/:id').delete(
-//   validate({
-//     params: categorySchema.categoryId
-//   }),
-//   asyncHandler(CategoryController.deleteCate)
-// )
+attributeRoutes.route('/:id').delete(
+  onlyRole(['ADMIN']),
+  validate({
+    params: attributeSchema.attributeId
+  }),
+  asyncHandler(AttributeController.deleteAttribute)
+)
 
 export default attributeRoutes

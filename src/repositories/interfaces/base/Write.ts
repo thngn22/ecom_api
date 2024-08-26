@@ -9,7 +9,7 @@ interface Write<T> {
   ) => Promise<mongoose.UpdateWriteOpResult>
   findOneAndUpdate: (
     conditions: mongoose.FilterQuery<T>,
-    update: Partial<T>,
+    update: Partial<T> | mongoose.UpdateQuery<T>,
     options?: mongoose.QueryOptions
   ) => Promise<T | null>
   delete: (_id: string, callback: (error: any, result: any) => void) => void

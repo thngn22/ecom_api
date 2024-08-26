@@ -1,18 +1,31 @@
 import { z } from 'zod'
+import { id } from './common.schema'
 
-// Schema cho mỗi field trong attribute
 const attributeFieldSchema = z.object({
   name: z.string(),
   type: z.enum(['string', 'number', 'array', 'object']),
-  required: z.boolean().default(false)
+  require: z.boolean().default(false)
 })
 
 const create = z.array(attributeFieldSchema).nonempty({
   message: 'Attributes array cannot be empty'
 })
 
+const attributeId = z.object({
+  id
+})
+
+const update = z.object({
+  name: z.string(),
+  type: z.enum(['string', 'number', 'array', 'object']),
+  require: z.boolean(),
+  is_publish: z.boolean()
+})
+
 const attributeSchema = {
-  create
+  create,
+  attributeId,
+  update
 }
 
 export default attributeSchema

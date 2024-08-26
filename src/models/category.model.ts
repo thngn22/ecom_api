@@ -8,6 +8,8 @@ const CategorySchema = new mongoose.Schema<ICategoryModel>(
     root_id: { type: String, required: true },
     parent_id: { type: mongoose.Schema.Types.ObjectId, ref: 'category' },
     image: { type: String },
+    is_publish: { type: Boolean, default: false },
+    is_deleted: { type: Boolean, default: false },
     left: { type: Number, default: 0 },
     right: { type: Number, default: 0 }
   },
