@@ -31,7 +31,7 @@ class CategoryService {
     let right
     let root_id = v4()
     if (parent_id) {
-      const parentCategory = await categoryRepo.findById(parent_id.toString())
+      const parentCategory = await categoryRepo.findById(parent_id.toString(), undefined, true)
       if (!parentCategory) throw new ResponseError('Parent Category not existed!!!', StatusCodes.BAD_REQUEST)
 
       await categoryRepo.updateMany(
@@ -72,7 +72,7 @@ class CategoryService {
     if (attributes.length > 0) {
       await Promise.all(
         attributes.map(async (item) => {
-          const existedAttribute = await attributeRepo.findById(item.toString())
+          const existedAttribute = await attributeRepo.findById(item.toString(), undefined, true)
           if (!existedAttribute) throw new ResponseError('Attribute not existed', StatusCodes.BAD_REQUEST)
         })
       )
@@ -103,13 +103,13 @@ class CategoryService {
   /**
    * @desc: this function get child category
    *
-   * @param {string | null} parent_id - null if you want to get all of cateChild of category root
+   * @param {string | null} parent_id - null if you want to get all of category root
    * @returns result
    */
   static getChildCategory = async ({ parent_id = null }: ICategoryModel) => {
     let query
     if (parent_id) {
-      const foundParentCate = await categoryRepo.findById(parent_id.toString(), { lean: true })
+      const foundParentCate = await categoryRepo.findById(parent_id.toString(), { lean: true }, true)
       if (!foundParentCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
       query = {
         root_id: foundParentCate.root_id,
@@ -126,20 +126,13 @@ class CategoryService {
     })
   }
 
-  static updateCategory = async ({ id, name, image }: ICategoryModel) => {
-    const existedCate = await categoryRepo.findById(id)
-    if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
-
-    return await categoryRepo.findOneAndUpdate({ _id: id }, { name, image })
-  }
-
   /**
-   * @desc: this function deleted category
-   * First it check id.
-   * After that, update left and right others follow Nested model(tree). Algo is, find cate which left >= left+width, update left-width and right is same.
-   * Finally, update left and right of cate and childCate to 0.
+   * @desc: this function update category
    *
-   * @param {string} id - null if you want to create root Category
+   * @param {string} id
+   * @param {string} name
+   * @param {string} image
+   * @param {array[string]} attributes
    * @returns result
    *
    * @example
@@ -149,8 +142,52 @@ class CategoryService {
    *    "attributes": ["66cb521fea2f0154d2246212", "66cb521fea2f0154d2246213"]
    * }
    */
+  static updateCategory = async ({ id, name, image, attributes }: ICategoryModel) => {
+    const existedCate = await categoryRepo.findById(id, undefined, true)
+    if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
+
+    return await categoryRepo.findOneAndUpdate({ _id: id }, { name, image, attributes })
+  }
+
+  /**
+   * @desc: this function handle publish or unpublish category
+   * First it check id and find this cate and cate's child.
+   * Then, update is_publish follow Nested model(tree).
+   *
+   * @param {string} id
+   * @returns result
+   */
+  static handlePublishCategory = async (id: string) => {
+    const existedCate = await categoryRepo.findById(id, undefined, true)
+    if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
+
+    await categoryRepo.updateMany(
+      {
+        root_id: existedCate.root_id,
+        left: { $gte: existedCate.left },
+        right: { $lte: existedCate.right }
+      },
+      {
+        $set: {
+          is_publish: !existedCate.is_publish
+        }
+      }
+    )
+
+    return 'Successfully!!'
+  }
+
+  /**
+   * @desc: this function deleted category
+   * First it check id.
+   * After that, update left and right others follow Nested model(tree). Algo is, find cate which left >= left+width, update left-width and right is same.
+   * Finally, update left and right of cate and childCate to 0.
+   *
+   * @param {string} id
+   * @returns result
+   */
   static deletaCategory = async (id: string) => {
-    const existedCate = await categoryRepo.findById(id)
+    const existedCate = await categoryRepo.findById(id, undefined, true)
     if (!existedCate) throw new ResponseError('Category not exited!!!', StatusCodes.BAD_REQUEST)
 
     const categoryIds = await categoryRepo.find(
@@ -175,6 +212,8 @@ class CategoryService {
       },
       {
         $set: {
+          root_id: null,
+          parent_id: null,
           left: 0,
           right: 0,
           is_deleted: true,

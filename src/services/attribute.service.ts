@@ -8,12 +8,12 @@ import StatusCodes from '~/utils/statusCodes'
 
 class AttributeService {
   /**
-   * @desc: this function return all attributes have is_publish: true
+   * @desc: this function return all attributes have is_publish: true & is_deleted: false
    *
    * @returns result
    */
   static getAllAttribute = async () => {
-    return attributeRepo.find({ is_publish: true })
+    return attributeRepo.find({ is_publish: true, is_deleted: false })
   }
 
   /**
@@ -48,7 +48,7 @@ class AttributeService {
    * First, it check existed category.
    * After that, if you want to unpublish this attribute, it allow attribute to unpublish when is_publish in cate is true.
    * @param {IAttributeModel} attribute
-   * @returns {IAttributeModel} result after create
+   * @returns {IAttributeModel} result model after update
    *
    * @example
    * @param
@@ -60,7 +60,7 @@ class AttributeService {
    * }
    */
   static updateAttribute = async ({ id, name, type, require = false, is_publish }: IAttributeModel) => {
-    const exitedAttribute = await attributeRepo.findById(id)
+    const exitedAttribute = await attributeRepo.findById(id, undefined, true)
     if (!exitedAttribute) throw new ResponseError('Attribute not existed!!!', StatusCodes.BAD_REQUEST)
 
     if (!is_publish) {
@@ -80,18 +80,27 @@ class AttributeService {
 
   /**
    * @desc - use for delete (but update field isDelete: true)
-   * @param {IAttributeModel} attribute
-   * @returns {IAttributeModel} result after create
-   *
-   * @example
-   * @param
-   * {
-   *    "name": "updateName",
-   *    "type": "updateType",
-   *    "require": true
-   * }
+   * First, check existed Attribute
+   * Then, if none of category relevant with this attribute have is_deleted: true, allows attribute to deleted
+   * @param {string} id
+   * @returns {IAttributeModel} result model after update update field is_deleted: true
    */
   static deleteAttribute = async (id: string) => {
+    const exitedAttribute = await attributeRepo.findById(id, undefined, true)
+    if (!exitedAttribute) throw new ResponseError('Attribute not existed!!!', StatusCodes.BAD_REQUEST)
+
+    const relatedCategories = await categoryRepo.find({
+      _id: { $in: exitedAttribute.category_orderIds },
+      is_deleted: false
+    })
+
+    if (relatedCategories.length > 0) {
+      throw new ResponseError(
+        "Can't delete this attribute because it's being used by one or more categories that are not deleted",
+        StatusCodes.BAD_REQUEST
+      )
+    }
+
     return await attributeRepo.findOneAndUpdate({ _id: id }, { is_deleted: true, is_publish: false })
   }
 }

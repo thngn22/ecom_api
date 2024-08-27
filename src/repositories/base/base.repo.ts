@@ -48,9 +48,13 @@ class RepositoryBase<T extends mongoose.Document> implements Read<T>, Write<T> {
     }
   }
 
-  async findById(_id: string | null, options?: MongoDBOptions): Promise<T | null> {
+  async findById(_id: string | null, options?: MongoDBOptions, checkIsDeleted: boolean = false): Promise<T | null> {
     const findOptions = { ...this.defaultOption, ...options }
     const query = this._model.findById(_id).select(this.createSelectFilter(findOptions)).sort(findOptions.sort)
+
+    if (checkIsDeleted) {
+      query.where('is_deleted').equals(false)
+    }
 
     return query.exec()
   }

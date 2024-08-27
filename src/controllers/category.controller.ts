@@ -16,8 +16,13 @@ class CategoryController {
       await CategoryService.updateCategory({
         id: req.params.id,
         ...req.body
-      })
+      }),
+      'OK'
     )
+  }
+
+  handlePublishCate = async (req: Request, res: Response) => {
+    res.sendData(await CategoryService.handlePublishCategory(req.params.id), 'OK')
   }
 
   deleteCate = async (req: Request, res: Response) => {
