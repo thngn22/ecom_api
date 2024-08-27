@@ -34,6 +34,13 @@ categoryRoutes.route('/:id').put(
   asyncHandler(CategoryController.updateCate)
 )
 
+categoryRoutes.route('/hp/:id').put(
+  validate({
+    params: categorySchema.categoryId
+  }),
+  asyncHandler(CategoryController.handlePublishCate)
+)
+
 categoryRoutes.route('/:id').delete(
   validate({
     params: categorySchema.categoryId

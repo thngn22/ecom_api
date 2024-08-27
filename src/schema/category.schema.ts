@@ -7,8 +7,11 @@ const getChildCategory = z.object({
 
 const create = z.object({
   name: z.string().nonempty('Name is required'),
-  image: z.string().optional(),
-  parent_id: z.union([z.string(), z.null()]).optional()
+  image: z.string().nonempty('Name is required').optional(),
+  parent_id: z.union([z.string(), z.null()]).optional(),
+  attributes: z.array(id).nonempty({
+    message: 'Attributes array cannot be empty'
+  })
 })
 
 const categoryId = z.object({
@@ -16,8 +19,9 @@ const categoryId = z.object({
 })
 
 const update = z.object({
-  name: z.string().nonempty('Name is required'),
-  image: z.string().optional()
+  name: z.string(),
+  image: z.string().optional(),
+  attributes: z.array(id)
 })
 
 const categorySchema = {
