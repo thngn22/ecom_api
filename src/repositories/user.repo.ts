@@ -6,6 +6,10 @@ class UserRepository extends RepositoryBase<IUserModel> {
   constructor() {
     super(UserModel)
   }
+
+  create(item: Partial<IUserModel>): Promise<IUserModel> {
+    return super.create(item)
+  }
 }
 
-export = UserRepository
+export = new UserRepository()

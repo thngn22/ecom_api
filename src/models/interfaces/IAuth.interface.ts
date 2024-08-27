@@ -5,6 +5,7 @@ interface IAuthModel extends mongoose.Document {
   password: string
   verified: boolean
   roles: string[]
+  access_token: string
   refresh_token: string
   refresh_token_used: string[]
 }
