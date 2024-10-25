@@ -1,6 +1,6 @@
-import CategoryModel = require('~/models/category.model')
-import ICategoryModel = require('~/models/interfaces/ICategory.interface')
-import RepositoryBase = require('./base/base.repo')
+import CategoryModel from '~/models/category.model'
+import ICategoryModel from '~/models/interfaces/ICategory.interface'
+import RepositoryBase from './base/base.repo'
 import { FilterQuery, QueryOptions } from 'mongoose'
 import MongoDBOptions from './interfaces/types/MongoDBOptions'
 

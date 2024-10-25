@@ -1,4 +1,4 @@
-import mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 interface ICategoryModel extends mongoose.Document {
   attributes: Array<mongoose.Schema.Types.ObjectId>
@@ -12,4 +12,4 @@ interface ICategoryModel extends mongoose.Document {
   right: number
 }
 
-export = ICategoryModel
+export default ICategoryModel
